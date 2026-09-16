@@ -1,0 +1,17 @@
+# Fichiers de travail, non destinés au rendu
+ranger-captures.bat
+
+# Dossiers de travail de Screenpresso et captures non retenues
+captures/Screenpresso/
+captures/non-retenues/
+captures/LISEZ-MOI.txt
+
+# Copies à noms courts des scripts, créées pour faciliter la saisie
+# dans la VM ; les versions nommées complètes font foi
+scripts/c.ps1
+scripts/m.ps1
+scripts/r.ps1
+
+# Divers
+Thumbs.db
+desktop.ini
