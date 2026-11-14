@@ -8,7 +8,7 @@
 
 > **En une phrase :** j'ai diagnostiqué et réparé trois pannes réelles sur un poste Windows 11 (impression impossible, plus de réseau, démarrage très lent) avec une méthode structurée : 18 hypothèses testées, et un démarrage ramené de 101,9 s à 42,6 s.
 
-Ce dépôt est écrit pour être compris **même sans rien connaître** au dépannage : tous les mots techniques sont expliqués.
+Ce dépôt est écrit pour être compris **même sans rien connaître** au dépannage : tous les mots techniques sont expliqués.<br>
 👉 Le rapport d'intervention complet, ticket par ticket, est dans [`doc/rapport-intervention.md`](doc/rapport-intervention.md).
 
 > **Projet 4/5** du PPE IT Essentials, module CFC 187 *« Mettre en service un poste de travail ICT avec le système d'exploitation »*, classe E1B, Geneva Institute of Technology (GIT), septembre 2026.
