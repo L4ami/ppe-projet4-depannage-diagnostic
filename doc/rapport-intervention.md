@@ -38,7 +38,7 @@ Le service support reçoit un poste signalé en panne. Trois scénarios ont ét�
 
 Avant toute intervention destructrice, un instantané complet de la machine virtuelle a été créé. Un **snapshot** est une photo de l'état intégral de la VM à un instant donné : disque, mémoire, configuration. Il permet de revenir à cet état en quelques secondes si une manipulation tourne mal.
 
-![Snapshot créé](captures/01-snapshot-cree.png)
+![Snapshot créé](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/01-snapshot-cree.png)
 
 *Le gestionnaire de snapshots de VMware affiche l'instantané `P4-etat-sain-avant-pannes`, pris avant toute modification du poste. C'est le point de retour garanti pour l'ensemble de l'intervention.*
 
@@ -48,15 +48,15 @@ Cette étape n'est pas propre au laboratoire : en entreprise, on sauvegarde ou o
 
 Sans relevé de l'état sain, il est impossible de prouver ensuite qu'une panne existait ni qu'elle a été corrigée. Un script PowerShell (`p4-etat-reference.ps1`, annexe 10.1) a figé les valeurs clés du poste en état de marche.
 
-![État de référence — services et spouleur](captures/02a-etat-reference.png)
+![État de référence — services et spouleur](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/02a-etat-reference.png)
 
 *Relevé des services critiques et de la configuration du spouleur d'impression. Le service `Spooler` est en `Running`, en démarrage `Automatic`, et son binaire est `C:\WINDOWS\System32\spoolsv.exe`. Ses dépendances sont `RPCSS` et `HTTP`, toutes deux en fonctionnement. Ce sont les valeurs auxquelles toute anomalie sera comparée.*
 
-![État de référence — réseau et démarrages](captures/02b-etat-reference.png)
+![État de référence — réseau et démarrages](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/02b-etat-reference.png)
 
 *Configuration réseau et historique des démarrages. La carte `Ethernet0` (Intel 82574L, MAC `00-0C-29-59-F0-3F`) porte l'adresse `192.168.190.135`, passerelle `192.168.190.2`, serveur DHCP `192.168.190.254`. Les durées de démarrage relevées s'échelonnent de 32,6 s à 63,7 s.*
 
-![État de référence — démarrage et ressources](captures/02c-etat-reference.png)
+![État de référence — démarrage et ressources](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/02c-etat-reference.png)
 
 *Éléments lancés au démarrage et ressources disponibles : 40,7 Go libres sur le disque système (69 %), 7,8 Go de mémoire dont 5,4 Go libres. Ces chiffres serviront à écarter les causes « disque plein » et « mémoire saturée » avec une preuve plutôt qu'une affirmation.*
 
@@ -152,13 +152,13 @@ La chaîne fait le travail à la place de l'intuition. C'est elle qui, pour la p
 
 **Constat effectué sur le poste :** l'ouverture de *Paramètres > Bluetooth et appareils > Imprimantes et scanners* puis la tentative d'ajout d'un périphérique produit un message d'erreur explicite.
 
-![Symptôme — service spouleur arrêté](captures/03a-symptome-spouleur.png)
+![Symptôme — service spouleur arrêté](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/03a-symptome-spouleur.png)
 
 *Windows affiche « Le service Spouleur d'impressions local n'est pas en cours d'exécution. Redémarrez le spouleur ou redémarrez l'ordinateur. » Le système nomme lui-même le composant défaillant : le point de départ du diagnostic est donné.*
 
 **Tri des symptômes.** L'écran affichait également des échecs de connexion Bluetooth et Miracast. Ces messages ont été écartés d'emblée :
 
-![Faux symptôme — Bluetooth](captures/03b-faux-symptome-bluetooth.png)
+![Faux symptôme — Bluetooth](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/03b-faux-symptome-bluetooth.png)
 
 *Fenêtre « Ajouter un appareil » signalant une impossibilité de connexion Bluetooth. Ce symptôme est indépendant de la panne : la machine de test est virtuelle et VMware n'émule aucun adaptateur Bluetooth. Le message était déjà présent avant l'incident et l'est resté après réparation.*
 
@@ -168,7 +168,7 @@ Un utilisateur signale souvent plusieurs anomalies simultanément. Séparer ce q
 
 Hypothèses formulées **avant** toute investigation, et enregistrées horodatées :
 
-![Hypothèses initiales — panne A](captures/05-hypotheses-panne-A.png)
+![Hypothèses initiales — panne A](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/05-hypotheses-panne-A.png)
 
 *Liste rédigée à 11h17, soit avant le premier test technique (le `sc qc` de 11h29). L'antériorité de ce relevé garantit qu'il s'agit d'un raisonnement réel et non d'une reconstitution après coup.*
 
@@ -186,11 +186,11 @@ Les hypothèses H4 et H5 ont été ajoutées après application de la chaîne «
 
 **Consultation du journal Système.** Premier réflexe avant toute manipulation : lire ce que Windows a enregistré.
 
-![Journal Système filtré sur les erreurs](captures/04a-journal-systeme-erreur.png)
+![Journal Système filtré sur les erreurs](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/04a-journal-systeme-erreur.png)
 
 *Le journal Système contenait 972 événements ; le filtrage sur le niveau « Erreur » en isole 16, dont 4 seulement datent du jour de l'incident. Le tri par horodatage autour de l'incident est ce qui rend un journal exploitable — sans lui, on se noie.*
 
-![Événement 7000 — échec de démarrage du service](captures/04b-event-7000-spouleur.png)
+![Événement 7000 — échec de démarrage du service](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/04b-event-7000-spouleur.png)
 
 *Événement 7000, source « Service Control Manager », 16.09.2026 à 11:04:34 : « Le service Spooler n'a pas pu démarrer en raison de l'erreur suivante : Le fichier spécifié est introuvable. » Le message ne dit pas que le service a planté ni que l'accès a été refusé : il dit que Windows ne trouve pas un fichier.*
 
@@ -204,7 +204,7 @@ Conséquences immédiates sur les hypothèses :
 
 **Vérification de la configuration du service.**
 
-![sc qc — chemin du binaire altéré](captures/06-sc-qc-spooler-chemin-casse.png)
+![sc qc — chemin du binaire altéré](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/06-sc-qc-spooler-chemin-casse.png)
 
 *La commande `sc qc Spooler` affiche `BINARY_PATH_NAME : C:\WINDOWS\System32\spoolsvc.exe`, alors que l'état de référence indiquait `spoolsv.exe`. Un seul caractère diffère : un « c » surnuméraire. La sortie confirme par ailleurs `START_TYPE : 2 AUTO_START` et `DEPENDENCIES : RPCSS, http`, ce qui écarte définitivement H3 et H4.*
 
@@ -212,31 +212,31 @@ C'est ici que l'état de référence prend toute sa valeur. Sans point de compar
 
 **Preuve matérielle de l'absence du fichier.**
 
-![Test-Path sur les deux binaires](captures/07-test-path-binaire.png)
+![Test-Path sur les deux binaires](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/07-test-path-binaire.png)
 
 *`Test-Path "C:\WINDOWS\System32\spoolsvc.exe"` renvoie `False` — le fichier déclaré n'existe pas. `Test-Path "C:\WINDOWS\System32\spoolsv.exe"` renvoie `True` — le binaire légitime est intact et présent. La cause est donc une altération de configuration, non une corruption de fichier système.*
 
 ### 3.4 Étapes 4 et 5 — Correction et vérification
 
-![Correction par sc config](captures/08-reparation-sc-config.png)
+![Correction par sc config](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/08-reparation-sc-config.png)
 
 *`sc.exe config Spooler binPath= "C:\WINDOWS\System32\spoolsv.exe"` rétablit le chemin correct. L'outil officiel a été préféré à une modification directe du registre : il contrôle le format de la valeur écrite et réduit le risque d'erreur. À noter, l'espace obligatoire après `binPath=` — particularité de syntaxe de `sc.exe`.*
 
-![Service réparé et redémarré](captures/09-spouleur-repare.png)
+![Service réparé et redémarré](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/09-spouleur-repare.png)
 
 *`Start-Service Spooler` puis `Get-Service Spooler` confirment l'état `Running`. Le `sc qc` de contrôle affiche de nouveau `BINARY_PATH_NAME : C:\WINDOWS\System32\spoolsv.exe`. Cette capture et la capture 06 forment la paire avant/après de la correction.*
 
-![Fonction d'impression rétablie](captures/10-imprimantes-fonctionnel.png)
+![Fonction d'impression rétablie](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/10-imprimantes-fonctionnel.png)
 
 *Retour dans Paramètres > Imprimantes et scanners : la recherche de périphériques s'exécute normalement et le message d'erreur sur le spouleur n'apparaît plus. La vérification porte sur la fonction attendue par l'utilisateur, pas seulement sur l'état technique du service.*
 
 **Vérification de la stabilité.** Un service relancé manuellement ne prouve pas qu'il redémarrera seul — or c'est précisément ce qui avait échoué.
 
-![Service opérationnel après redémarrage](captures/11-spouleur-apres-redemarrage.png)
+![Service opérationnel après redémarrage](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/11-spouleur-apres-redemarrage.png)
 
 *Après redémarrage complet du poste, `Get-Service Spooler` affiche `Running` à 13:02 sans aucune intervention manuelle. Le service repart donc automatiquement, comme prévu par son type de démarrage `Automatic`.*
 
-![Journal Système sans nouvelle erreur 7000](captures/12-journal-sans-erreur-7000.png)
+![Journal Système sans nouvelle erreur 7000](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/12-journal-sans-erreur-7000.png)
 
 *Journal Système filtré sur les erreurs après le redémarrage de 12:57:16 — repérable aux deux entrées `Eventlog 30 — Service startup`. L'événement 7000 encore visible en liste date de 11:04:34, soit **avant** l'intervention ; aucun nouvel événement 7000 n'apparaît après le redémarrage. Les entrées `DistributedCOM 10010` et `TPM-WMI 1796` sont antérieures ou sans rapport avec le spouleur.*
 
@@ -270,19 +270,19 @@ Une preuve fondée sur l'absence d'erreur n'a de valeur que si la fenêtre tempo
 
 **Simulation de la panne.** Le périphérique réseau a été désinstallé via le Gestionnaire de périphériques.
 
-![Désinstallation du périphérique réseau](captures/13-panne-B-desinstallation-pilote.png)
+![Désinstallation du périphérique réseau](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/13-panne-B-desinstallation-pilote.png)
 
 *Boîte de dialogue « Désinstaller l'appareil » pour la carte Intel(R) 82574L Gigabit Network Connection. La case « Tenter de supprimer le pilote pour cet appareil » est absente : Windows ne la propose que pour les pilotes tiers. Le pilote de cette carte étant intégré au système, seul le périphérique peut être désinstallé (voir problème P3, section 7).*
 
 **Constat technique.**
 
-![Symptôme — perte de connectivité](captures/14-symptome-reseau.png)
+![Symptôme — perte de connectivité](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/14-symptome-reseau.png)
 
 *`ipconfig /all` ne renvoie plus aucune adresse IPv4 exploitable, et `ping 192.168.190.2` vers la passerelle échoue avec 100 % de perte. À comparer avec l'état de référence (capture 02b) : adresse `192.168.190.135`, passerelle joignable.*
 
 ### 4.2 Étape 2 — Théorie des causes probables
 
-![Hypothèses initiales — panne B](captures/15-hypotheses-panne-B.png)
+![Hypothèses initiales — panne B](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/15-hypotheses-panne-B.png)
 
 *Hypothèses rédigées avant investigation : attaque par déni de service distribué, mise à jour Windows défaillante, mauvaise manipulation de l'utilisateur.*
 
@@ -300,7 +300,7 @@ La chaîne réseau de la section 2.2 a ensuite été appliquée pour compléter 
 
 **Maillon 1 — le lien physique.**
 
-![Carte réseau virtuelle connectée](captures/16-vmware-carte-connectee.png)
+![Carte réseau virtuelle connectée](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/16-vmware-carte-connectee.png)
 
 *Paramètres VMware de la machine : « Connecté » et « Se connecter lors de la mise sous tension » sont cochés, mode NAT actif. L'équivalent virtuel du câble Ethernet est donc en place. **Hypothèse « câble ou carte débranchée » écartée, avec preuve.***
 
@@ -308,7 +308,7 @@ Ne pas avoir trouvé la panne à cette étape n'est pas un échec : une cause é
 
 **Maillon 2 — le matériel vu par le système.**
 
-![Gestionnaire de périphériques — périphériques cachés](captures/18-peripheriques-caches.png)
+![Gestionnaire de périphériques — périphériques cachés](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/18-peripheriques-caches.png)
 
 *Section « Cartes réseau » du Gestionnaire de périphériques : la carte Intel 82574L a disparu de la liste. Seuls subsistent les WAN Miniport — des pilotes logiciels utilisés par Windows pour les connexions VPN et modem (`PPPOE`, `PPTP`, `L2TP`…), présents indépendamment du matériel installé. Aucune section « Autres périphériques » n'apparaît.*
 
@@ -321,17 +321,17 @@ Le maillon 2 étant cassé, les maillons 3 à 7 — configuration IP, DHCP, pass
 
 ### 4.4 Étapes 4 et 5 — Correction et vérification
 
-![Carte réseau réinstallée](captures/19-carte-reseau-reinstallee.png)
+![Carte réseau réinstallée](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/19-carte-reseau-reinstallee.png)
 
 *Après « Action > Rechercher les modifications sur le matériel », la carte Intel(R) 82574L réapparaît sous Cartes réseau, sans triangle d'avertissement : elle est détectée **et** correctement pilotée.*
 
 La réparation n'a nécessité **ni téléchargement, ni support d'installation, ni redémarrage**. Windows conserve une réserve interne de pilotes, le *magasin de pilotes* (`DriverStore`) ; le pilote de cette carte étant intégré au système, il n'en était jamais sorti. Un simple rescan a suffi.
 
-![Connectivité rétablie](captures/20-reseau-retabli.png)
+![Connectivité rétablie](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/20-reseau-retabli.png)
 
 *`ipconfig /all` montre l'adresse `192.168.190.135` de nouveau attribuée, avec un bail DHCP obtenu à 13:37:02 — soit à l'instant même du rescan. `ping 192.168.190.2` répond avec 0 % de perte. L'adresse est identique à celle de l'état de référence, aucune divergence à justifier.*
 
-![Sortie Internet vérifiée](captures/20b-ping-internet.png)
+![Sortie Internet vérifiée](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/20b-ping-internet.png)
 
 *`ping 8.8.8.8` répond avec 0 % de perte et 11 ms de moyenne. Le maillon 6 — sortie vers Internet — est validé. La chaîne est vérifiée de bout en bout, et non jusqu'au premier signe encourageant.*
 
@@ -365,17 +365,17 @@ La réparation n'a nécessité **ni téléchargement, ni support d'installation,
 
 Une plainte de lenteur n'est pas mesurable telle quelle. La première action consiste donc à la transformer en chiffres, avant et après.
 
-![Mesure de référence des démarrages](captures/21-mesure-demarrage-avant.png)
+![Mesure de référence des démarrages](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/21-mesure-demarrage-avant.png)
 
 *Relevé des durées de démarrage issu du journal `Diagnostics-Performance`, événement 100, que Windows écrit automatiquement à chaque démarrage. Trois valeurs par démarrage : durée totale, phase principale (noyau, pilotes, services) et phase postérieure à l'ouverture de session. Moyenne de référence retenue : **44,8 s** au total, dont **25,6 s** après ouverture de session.*
 
-![Mise en place du scénario](captures/21b-panne-C-posee.png)
+![Mise en place du scénario](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/21b-panne-C-posee.png)
 
 *Confirmation de la mise en place du scénario de panne à 14h14.*
 
 ### 5.2 Mesure sous panne
 
-![Mesure des démarrages sous panne](captures/22-mesure-demarrage-apres.png)
+![Mesure des démarrages sous panne](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/22-mesure-demarrage-apres.png)
 
 *Trois démarrages après mise en place du scénario. Les deux derniers — 14:31 et 14:38 — donnent 102,0 s et 101,8 s au total, soit un écart de 0,2 s entre deux mesures indépendantes. Cette reproductibilité écarte l'hypothèse d'une variation fortuite. Le démarrage de 14:24 (58,5 s) est plus bas car le poste a été redémarré avant la fin de la charge : Windows a clos sa mesure prématurément.*
 
@@ -393,27 +393,27 @@ La ligne du milieu est la plus instructive : **la phase principale n'a pas boug�
 
 **Observation directe de l'état du poste.**
 
-![Processeur saturé après ouverture de session](captures/23a-processeur-97-pourcent.png)
+![Processeur saturé après ouverture de session](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/23a-processeur-97-pourcent.png)
 
 *Gestionnaire des tâches immédiatement après l'ouverture de session : 97 % d'utilisation du processeur alors qu'aucune application n'a été lancée par l'utilisateur. Le symptôme est visible en direct, sans outil spécialisé.*
 
-![Processus responsable](captures/23b-processus-powershell.png)
+![Processus responsable](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/23b-processus-powershell.png)
 
 *Après tri de la colonne Processeur, un processus **Windows PowerShell** occupe 50,1 % du processeur. Aucun script n'a été lancé manuellement : ce processus a donc été démarré automatiquement. Le gestionnaire des tâches nomme le programme exécuté, mais pas ce qui l'a lancé.*
 
 **Inventaire des programmes de démarrage.**
 
-![Applications de démarrage](captures/23c-applications-demarrage.png)
+![Applications de démarrage](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/23c-applications-demarrage.png)
 
 *Onglet Applications de démarrage : trois entrées PowerShell — `powershell (2)`, `Windows PowerShell` et `Windows PowerShell (2)` — dont deux classées en impact **Haut**. Sur un poste bureautique, trois consoles lancées automatiquement à l'ouverture de session est anormal. En haut à droite, « Dernier temps de démarrage du BIOS : 5,9 secondes » écarte toute cause firmware ou matérielle — maillon 1 de la chaîne validé.*
 
-![Entrées de démarrage dépliées](captures/23d-applications-demarrage-depliees.png)
+![Entrées de démarrage dépliées](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/23d-applications-demarrage-depliees.png)
 
 *Groupes dépliés. Le gestionnaire des tâches regroupe les entrées par programme exécuté et non par entrée de démarrage : il affiche « Windows PowerShell » sans révéler le nom réel des entrées ni la commande exécutée. Cet outil montre l'effet, pas la source.*
 
 **Remontée à la source : le registre.**
 
-![Clé Run du registre utilisateur](captures/24-cle-run-registre.png)
+![Clé Run du registre utilisateur](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/24-cle-run-registre.png)
 
 *`Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"` révèle trois entrées — `SyncDocuments`, `AgentComptaMAJ`, `IndexationDocs` — qui lancent toutes la même commande : `powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\PPE-P4\scripts\charge-demarrage.ps1"`. Les deux autres entrées, `OneDrive` et `MicrosoftEdgeAutoLaunch`, sont des composants légitimes du poste.*
 
@@ -425,11 +425,11 @@ Trois caractéristiques de ces entrées méritent d'être relevées, car elles c
 
 **Confirmation chiffrée dans les journaux.**
 
-![Événement 101 — dwm.exe, fausse piste](captures/24b-event-101-dwm-faux-coupable.png)
+![Événement 101 — dwm.exe, fausse piste](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/24b-event-101-dwm-faux-coupable.png)
 
 *Le premier événement 101 consulté nomme `dwm.exe`, le Desktop Window Manager — le composant qui dessine le bureau et les fenêtres. Ce n'est pas le coupable mais une victime : il a démarré lentement parce que le processeur était saturé par autre chose. Le journal signale ce qui a été lent, pas nécessairement ce qui a causé la lenteur. S'arrêter à cet événement conduirait à une fausse piste.*
 
-![Événement 101 — powershell.exe](captures/24c-event-101-powershell.png)
+![Événement 101 — powershell.exe](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/24c-event-101-powershell.png)
 
 *Événement 101 du 16.09.2026 à 14:31:31, niveau **Erreur** — le seul de ce niveau, les autres n'étant que des avertissements. Nom du fichier : `powershell.exe`. Durée totale : **59 136 ms**. Durée de la dégradation : **54 136 ms**. Windows désigne lui-même le responsable et chiffre le préjudice.*
 
@@ -439,11 +439,11 @@ Trois caractéristiques de ces entrées méritent d'être relevées, car elles c
 
 **Correction en deux temps.** La désactivation est immédiate et réversible ; la suppression est définitive. En intervention réelle on désactive, on vérifie que le poste va mieux, puis on nettoie. En cas d'erreur de diagnostic, on réactive sans rien avoir détruit.
 
-![Entrées désactivées](captures/25-entrees-desactivees.png)
+![Entrées désactivées](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/25-entrees-desactivees.png)
 
 *Les trois entrées PowerShell passent au statut « Désactivé ». `Microsoft OneDrive`, `msedge`, `SecurityHealthSystray` et `vmtoolsd` restent activés : ce sont des composants légitimes du poste. Un dépannage qui désactive tout au passage traite le symptôme au prix de la fonctionnalité.*
 
-![Mesure après réparation](captures/26-mesure-demarrage-apres-reparation.png)
+![Mesure après réparation](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/26-mesure-demarrage-apres-reparation.png)
 
 *Démarrage du 16.09 à 14:58, après correction : 42,6 s au total, 18,1 s de phase principale, 24,5 s après ouverture de session. Les valeurs reviennent au niveau de l'état de référence, et sont même très légèrement meilleures — trois programmes qui n'avaient pas lieu d'être ont disparu du démarrage.*
 
@@ -457,7 +457,7 @@ Trois caractéristiques de ces entrées méritent d'être relevées, car elles c
 
 **Nettoyage.**
 
-![Suppression des entrées et du script](captures/27-nettoyage-registre.png)
+![Suppression des entrées et du script](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/27-nettoyage-registre.png)
 
 *Sortie avant/après du script de nettoyage : suppression des trois entrées `SyncDocuments`, `AgentComptaMAJ` et `IndexationDocs`, puis du fichier `C:\PPE-P4\scripts\charge-demarrage.ps1`. Après opération, seules `OneDrive` et `MicrosoftEdgeAutoLaunch` subsistent dans la clé `Run`.*
 
@@ -552,17 +552,17 @@ Le critère de résolution effective ne se limite pas à la disparition du sympt
 
 1. Redémarrage de la machine virtuelle — sans effet.
 
-![Service VMTools actif](captures/99b-vmtools-service-actif.png)
+![Service VMTools actif](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/99b-vmtools-service-actif.png)
 
 *2. Vérification de l'état du service dans l'invité : `Get-Service VMTools` renvoie `Running`. Le service fonctionne, la cause est donc ailleurs.*
 
-![Isolation de l'invité](captures/99c-isolation-invite-activee.png)
+![Isolation de l'invité](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/99c-isolation-invite-activee.png)
 
 *3. Vérification des autorisations côté hyperviseur : « Activer le glisser-déplacer » et « Activer le copier-coller » sont cochés. Les options apparaissent grisées car la machine est sous tension, VMware verrouillant ces réglages pendant l'exécution. L'autorisation n'est donc pas en cause non plus.*
 
 4. Solution de contournement retenue : un **dossier partagé** VMware.
 
-![Dossier partagé configuré](captures/99-contournement-dossier-partage.png)
+![Dossier partagé configuré](https://raw.githubusercontent.com/L4ami/ppe-projet4-depannage-diagnostic/main/captures/99-contournement-dossier-partage.png)
 
 *Le dossier `C:\Users\Lami\Documents\PPE-P4` de la machine hôte est partagé vers la machine virtuelle sous le nom `PPE-P4`, en mode « Toujours activé ». Il devient accessible depuis l'invité à l'adresse `\\vmware-host\Shared Folders\PPE-P4`.*
 
